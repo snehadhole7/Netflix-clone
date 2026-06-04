@@ -10,16 +10,332 @@ const state = {
   movies: [],
   watchlist: [],
   currentMovie: null,
+  user: null,
+  profile: null,
 };
 
 const CATEGORIES = ['Trending', 'Popular on Netflix', 'Award-Winning Shows', 'Action Movies', 'Comedies', 'Dramas'];
 
 function init() {
-  fetchMovies();
+  setupAuth();
   setupNavScroll();
   setupSearch();
   setupModal();
+  fetchMovies();
 }
+
+// ===== AUTH =====
+
+function setupAuth() {
+  const signInBtn = document.getElementById('btn-sign-in');
+  const authOverlay = document.getElementById('auth-overlay');
+  const authClose = document.getElementById('auth-close');
+  const loginForm = document.getElementById('login-form');
+  const signupForm = document.getElementById('signup-form');
+  const signOutBtn = document.getElementById('btn-sign-out');
+  const switchBtns = authOverlay.querySelectorAll('.auth-switch-btn');
+  const togglePasswords = authOverlay.querySelectorAll('.toggle-password');
+
+  signInBtn.addEventListener('click', () => showAuthOverlay('login'));
+
+  authClose.addEventListener('click', closeAuthOverlay);
+
+  authOverlay.querySelector('.auth-backdrop').addEventListener('click', closeAuthOverlay);
+
+  switchBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.show;
+      if (target === 'signup') {
+        loginForm.classList.add('hidden');
+        signupForm.classList.remove('hidden');
+      } else {
+        signupForm.classList.add('hidden');
+        loginForm.classList.remove('hidden');
+      }
+    });
+  });
+
+  togglePasswords.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = btn.previousElementSibling?.previousElementSibling || btn.parentElement.querySelector('input');
+      if (!input) return;
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      btn.innerHTML = isPassword
+        ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+        : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    });
+  });
+
+  loginForm.addEventListener('submit', handleLogin);
+  signupForm.addEventListener('submit', handleSignup);
+  signOutBtn.addEventListener('click', handleSignOut);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !authOverlay.classList.contains('hidden')) {
+      closeAuthOverlay();
+    }
+  });
+
+  supabase.auth.onAuthStateChange((event, session) => {
+    (async () => {
+      if (session?.user) {
+        state.user = session.user;
+        await fetchProfile(session.user.id);
+        updateNavbar(true);
+        await fetchWatchlist();
+      } else {
+        state.user = null;
+        state.profile = null;
+        state.watchlist = [];
+        updateNavbar(false);
+      }
+    })();
+  });
+
+  checkSession();
+}
+
+async function checkSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.user) {
+    state.user = session.user;
+    await fetchProfile(session.user.id);
+    updateNavbar(true);
+    await fetchWatchlist();
+  }
+}
+
+async function fetchProfile(userId) {
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (data) {
+    state.profile = data;
+  }
+}
+
+async function ensureProfile(userId, username) {
+  const { data: existing } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (!existing) {
+    await supabase
+      .from('profiles')
+      .insert({ id: userId, username });
+  }
+
+  await fetchProfile(userId);
+}
+
+function showAuthOverlay(form) {
+  const authOverlay = document.getElementById('auth-overlay');
+  const loginForm = document.getElementById('login-form');
+  const signupForm = document.getElementById('signup-form');
+
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('signup-error').textContent = '';
+  loginForm.reset();
+  signupForm.reset();
+
+  if (form === 'signup') {
+    loginForm.classList.add('hidden');
+    signupForm.classList.remove('hidden');
+  } else {
+    signupForm.classList.add('hidden');
+    loginForm.classList.remove('hidden');
+  }
+
+  authOverlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+
+  const firstInput = authOverlay.querySelector('.auth-form:not(.hidden) input');
+  if (firstInput) setTimeout(() => firstInput.focus(), 100);
+}
+
+function closeAuthOverlay() {
+  const authOverlay = document.getElementById('auth-overlay');
+  authOverlay.classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('login-error');
+  const submitBtn = document.getElementById('login-submit');
+
+  errorEl.textContent = '';
+
+  if (!email || !password) {
+    errorEl.textContent = 'Please fill in all fields.';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Signing In...';
+
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    errorEl.textContent = getAuthErrorMessage(error.message);
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Sign In';
+    return;
+  }
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Sign In';
+  closeAuthOverlay();
+}
+
+async function handleSignup(e) {
+  e.preventDefault();
+  const username = document.getElementById('signup-username').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const errorEl = document.getElementById('signup-error');
+  const submitBtn = document.getElementById('signup-submit');
+
+  errorEl.textContent = '';
+
+  if (!username || !email || !password) {
+    errorEl.textContent = 'Please fill in all fields.';
+    return;
+  }
+
+  if (password.length < 6) {
+    errorEl.textContent = 'Password must be at least 6 characters.';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Creating Account...';
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { username },
+    },
+  });
+
+  if (error) {
+    errorEl.textContent = getAuthErrorMessage(error.message);
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Sign Up';
+    return;
+  }
+
+  if (data.user) {
+    await ensureProfile(data.user.id, username);
+  }
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Sign Up';
+  closeAuthOverlay();
+}
+
+async function handleSignOut() {
+  await supabase.auth.signOut();
+  state.watchlist = [];
+  const dropdown = document.getElementById('profile-dropdown');
+  dropdown.classList.remove('open');
+}
+
+function getAuthErrorMessage(msg) {
+  if (msg.includes('Invalid login credentials')) return 'Invalid email or password.';
+  if (msg.includes('User already registered')) return 'An account with this email already exists.';
+  if (msg.includes('Email not confirmed')) return 'Please confirm your email address.';
+  if (msg.includes('Password should be')) return 'Password must be at least 6 characters.';
+  return msg || 'An error occurred. Please try again.';
+}
+
+function updateNavbar(isSignedIn) {
+  const signInBtn = document.getElementById('btn-sign-in');
+  const profileMenu = document.getElementById('profile-menu');
+  const dropdownUser = document.getElementById('profile-dropdown-user');
+
+  if (isSignedIn) {
+    signInBtn.classList.add('hidden');
+    profileMenu.classList.remove('hidden');
+    const displayName = state.profile?.username || state.user?.email?.split('@')[0] || 'User';
+    dropdownUser.textContent = displayName;
+  } else {
+    signInBtn.classList.remove('hidden');
+    profileMenu.classList.add('hidden');
+  }
+}
+
+// ===== WATCHLIST (persisted for authenticated users) =====
+
+async function fetchWatchlist() {
+  if (!state.user) return;
+
+  const { data } = await supabase
+    .from('watchlist')
+    .select('movie_id')
+    .eq('user_id', state.user.id);
+
+  if (data) {
+    state.watchlist = data.map(w => w.movie_id);
+    refreshWatchlistButtons();
+  }
+}
+
+async function toggleWatchlist(movie, btn) {
+  if (!state.user) {
+    showAuthOverlay('login');
+    return;
+  }
+
+  const idx = state.watchlist.indexOf(movie.id);
+
+  if (idx > -1) {
+    state.watchlist.splice(idx, 1);
+    btn.classList.remove('added');
+    await supabase
+      .from('watchlist')
+      .delete()
+      .eq('user_id', state.user.id)
+      .eq('movie_id', movie.id);
+  } else {
+    state.watchlist.push(movie.id);
+    btn.classList.add('added');
+    await supabase
+      .from('watchlist')
+      .insert({ user_id: state.user.id, movie_id: movie.id });
+  }
+}
+
+function refreshWatchlistButtons() {
+  document.querySelectorAll('.btn-add-card').forEach(btn => {
+    const movieId = btn.dataset.movieId;
+    if (state.watchlist.includes(movieId)) {
+      btn.classList.add('added');
+    } else {
+      btn.classList.remove('added');
+    }
+  });
+
+  const addListBtn = document.getElementById('btn-add-list');
+  if (addListBtn && state.currentMovie) {
+    if (state.watchlist.includes(state.currentMovie.id)) {
+      addListBtn.classList.add('added');
+    } else {
+      addListBtn.classList.remove('added');
+    }
+  }
+}
+
+// ===== MOVIES =====
 
 async function fetchMovies() {
   const { data, error } = await supabase
@@ -131,6 +447,7 @@ function createMovieCard(movie, trendingNumber) {
   card.className = 'movie-card';
 
   const matchPercent = 85 + Math.floor(Math.random() * 15);
+  const isInWatchlist = state.watchlist.includes(movie.id);
 
   card.innerHTML = `
     ${trendingNumber ? `<span class="trending-number">${trendingNumber}</span>` : ''}
@@ -146,7 +463,7 @@ function createMovieCard(movie, trendingNumber) {
         <button class="btn-play-small" aria-label="Play">
           <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         </button>
-        <button class="btn-circle btn-add-card" data-movie-id="${movie.id}" aria-label="Add to My List">
+        <button class="btn-circle btn-add-card${isInWatchlist ? ' added' : ''}" data-movie-id="${movie.id}" aria-label="Add to My List">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 5v14M5 12h14"/>
           </svg>
@@ -185,16 +502,7 @@ function scrollTrack(track, direction) {
   track.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
 }
 
-function toggleWatchlist(movie, btn) {
-  const idx = state.watchlist.indexOf(movie.id);
-  if (idx > -1) {
-    state.watchlist.splice(idx, 1);
-    btn.classList.remove('added');
-  } else {
-    state.watchlist.push(movie.id);
-    btn.classList.add('added');
-  }
-}
+// ===== NAV SCROLL =====
 
 function setupNavScroll() {
   const navbar = document.getElementById('navbar');
@@ -202,6 +510,8 @@ function setupNavScroll() {
     navbar.classList.toggle('scrolled', window.scrollY > 50);
   });
 }
+
+// ===== SEARCH =====
 
 function setupSearch() {
   const searchBtn = document.querySelector('.search-btn');
@@ -274,6 +584,8 @@ function renderSearchResults(results, container) {
     container.appendChild(card);
   });
 }
+
+// ===== MODAL =====
 
 function setupModal() {
   const modal = document.getElementById('movie-modal');

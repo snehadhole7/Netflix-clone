@@ -35,14 +35,82 @@
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
         </svg>
       </button>
-      <div class="profile-menu">
-        <img src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=40" alt="Profile" class="profile-avatar" />
+      <button class="nav-btn btn-sign-in" id="btn-sign-in">Sign In</button>
+      <div class="profile-menu hidden" id="profile-menu">
+        <img src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=40" alt="Profile" class="profile-avatar" id="profile-avatar" />
         <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
           <path d="M7 10l5 5 5-5z"/>
         </svg>
+        <div class="profile-dropdown" id="profile-dropdown">
+          <div class="profile-dropdown-user" id="profile-dropdown-user"></div>
+          <button class="profile-dropdown-item" id="btn-sign-out">Sign out of Netflix</button>
+        </div>
       </div>
     </div>
   </nav>
+
+  <!-- Auth Overlay -->
+  <div id="auth-overlay" class="auth-overlay hidden">
+    <div class="auth-backdrop"></div>
+    <div class="auth-card">
+      <button class="auth-close" id="auth-close" aria-label="Close">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+      <div class="auth-forms">
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form" novalidate>
+          <h2>Sign In</h2>
+          <div class="auth-field">
+            <input type="email" id="login-email" placeholder=" " required autocomplete="email" />
+            <label for="login-email">Email address</label>
+          </div>
+          <div class="auth-field">
+            <input type="password" id="login-password" placeholder=" " required autocomplete="current-password" />
+            <label for="login-password">Password</label>
+            <button type="button" class="toggle-password" aria-label="Show password">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <p class="auth-error" id="login-error"></p>
+          <button type="submit" class="auth-submit" id="login-submit">Sign In</button>
+          <div class="auth-switch">
+            New to Netflix? <button type="button" class="auth-switch-btn" data-show="signup">Sign up now</button>.
+          </div>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signup-form" class="auth-form hidden" novalidate>
+          <h2>Sign Up</h2>
+          <div class="auth-field">
+            <input type="text" id="signup-username" placeholder=" " required autocomplete="username" />
+            <label for="signup-username">Username</label>
+          </div>
+          <div class="auth-field">
+            <input type="email" id="signup-email" placeholder=" " required autocomplete="email" />
+            <label for="signup-email">Email address</label>
+          </div>
+          <div class="auth-field">
+            <input type="password" id="signup-password" placeholder=" " required autocomplete="new-password" />
+            <label for="signup-password">Password (min 6 characters)</label>
+            <button type="button" class="toggle-password" aria-label="Show password">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <p class="auth-error" id="signup-error"></p>
+          <button type="submit" class="auth-submit" id="signup-submit">Sign Up</button>
+          <div class="auth-switch">
+            Already have an account? <button type="button" class="auth-switch-btn" data-show="login">Sign in</button>.
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <!-- Search Overlay -->
   <div id="search-overlay" class="overlay hidden">
