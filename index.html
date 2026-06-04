@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Netflix Clone</title>
+  <link rel="stylesheet" href="/src/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <!-- Navigation -->
+  <nav id="navbar">
+    <div class="nav-left">
+      <svg class="netflix-logo" viewBox="0 0 111 30" fill="#E50914">
+        <path d="M105.062 14.28L111 30c-1.75-.25-3.499-.563-5.28-.845l-3.345-8.686-3.437 7.969c-1.687-.282-3.344-.376-5.031-.595l6.03-13.56L94.184 0h5.375l3.03 7.75L105.562 0h5.094l-5.594 14.28zM90.47 0h-5.156v27.844c1.687.188 3.437.406 5.156.656V0zm-9.75 0h-5.156v28.969c1.719.313 3.437.563 5.156.906V0zM73.75 24.656c-2.5 0-3.75-1.844-3.75-4.156 0-2.281 1.25-4.156 3.75-4.156 2.469 0 3.719 1.875 3.719 4.156 0 2.312-1.25 4.156-3.719 4.156zm0-12.937c-5.156 0-8.75 3.562-8.75 8.781 0 5.25 3.594 8.812 8.75 8.812 5.125 0 8.719-3.562 8.719-8.812 0-5.219-3.594-8.781-8.719-8.781zM56.875 7.5h5.094V2.5h-5.094v5zm0 22.156h5.094V12.188h-5.094V29.656zM51.25 17.406c-2.094-.75-3.437-1.156-3.437-2.406 0-1 .937-1.594 2.312-1.594 1.906 0 3.75.75 5.063 1.563l1.75-3.656c-1.907-1.157-4.282-1.907-6.782-1.907-4.312 0-7.187 2.469-7.187 6.094 0 3.562 2.875 4.937 5.75 5.75 2.063.594 3.625 1.094 3.625 2.375 0 1.063-.906 1.75-2.5 1.75-2.094 0-4.281-.844-5.969-2.094l-1.625 3.75c2 1.406 4.75 2.281 7.469 2.281 4.563 0 7.5-2.281 7.5-6.281-.031-3.656-3.094-5.094-5.969-5.875zM36.562 24.656c-2.469 0-3.75-1.844-3.75-4.156 0-2.281 1.281-4.156 3.75-4.156 2.5 0 3.75 1.875 3.75 4.156 0 2.312-1.25 4.156-3.75 4.156zm0-12.937c-5.156 0-8.75 3.562-8.75 8.781 0 5.25 3.594 8.812 8.75 8.812 5.157 0 8.75-3.562 8.75-8.812 0-5.219-3.593-8.781-8.75-8.781zM20.531 29.656h5.094V4.406L20.53 3.78v25.875zM14.375 29.656h5.094V4.406L14.375 3.78v25.875zM8.187 24.656c-2.468 0-3.75-1.844-3.75-4.156 0-2.281 1.282-4.156 3.75-4.156 2.5 0 3.75 1.875 3.75 4.156 0 2.312-1.25 4.156-3.75 4.156zm0-12.937c-5.156 0-8.75 3.562-8.75 8.781 0 5.25 3.594 8.812 8.75 8.812 5.157 0 8.75-3.562 8.75-8.812 0-5.219-3.593-8.781-8.75-8.781z"/>
+      </svg>
+      <ul class="nav-links">
+        <li><a href="#" class="active">Home</a></li>
+        <li><a href="#">TV Shows</a></li>
+        <li><a href="#">Movies</a></li>
+        <li><a href="#">New & Popular</a></li>
+        <li><a href="#">My List</a></li>
+      </ul>
+    </div>
+    <div class="nav-right">
+      <button class="nav-btn search-btn" aria-label="Search">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+      </button>
+      <button class="nav-btn notification-btn" aria-label="Notifications">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </button>
+      <div class="profile-menu">
+        <img src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=40" alt="Profile" class="profile-avatar" />
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+          <path d="M7 10l5 5 5-5z"/>
+        </svg>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Search Overlay -->
+  <div id="search-overlay" class="overlay hidden">
+    <div class="search-container">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e5e5e5" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" id="search-input" placeholder="Titles, people, genres" />
+      <button class="close-search" aria-label="Close search">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div id="search-results" class="search-results"></div>
+  </div>
+
+  <!-- Hero Section -->
+  <section id="hero" class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#E50914">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+        </svg>
+        #1 in TV Shows Today
+      </span>
+      <h1 class="hero-title" id="hero-title">Stranger Things</h1>
+      <p class="hero-description" id="hero-description">When a young boy disappears, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces and one strange little girl.</p>
+      <div class="hero-meta" id="hero-meta">
+        <span class="meta-match">98% Match</span>
+        <span class="meta-year">2016</span>
+        <span class="meta-rating">TV-14</span>
+        <span class="meta-seasons">4 Seasons</span>
+      </div>
+      <div class="hero-buttons">
+        <button class="btn btn-play" id="btn-play-hero">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          Play
+        </button>
+        <button class="btn btn-info" id="btn-info-hero">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+          </svg>
+          More Info
+        </button>
+      </div>
+    </div>
+    <div class="hero-gradient"></div>
+    <div class="hero-maturity">TV-14</div>
+  </section>
+
+  <!-- Movie Rows -->
+  <main id="movie-rows" class="movie-rows">
+    <!-- Rows populated by JavaScript -->
+  </main>
+
+  <!-- Movie Detail Modal -->
+  <div id="movie-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-hero">
+        <img id="modal-backdrop" src="" alt="" class="modal-backdrop-img" />
+        <div class="modal-hero-gradient"></div>
+        <button class="modal-close" aria-label="Close modal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+        <div class="modal-hero-info">
+          <h2 id="modal-title" class="modal-title"></h2>
+          <div class="modal-hero-buttons">
+            <button class="btn btn-play btn-play-modal">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              Play
+            </button>
+            <button class="btn-circle" id="btn-add-list" aria-label="Add to My List">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+            </button>
+            <button class="btn-circle" id="btn-like" aria-label="Like">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="modal-main-info">
+          <span class="modal-match" id="modal-match">98% Match</span>
+          <span id="modal-year"></span>
+          <span class="modal-maturity-badge" id="modal-maturity"></span>
+          <span id="modal-duration"></span>
+          <span class="modal-quality">HD</span>
+        </div>
+        <p id="modal-description" class="modal-description"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-links">
+        <a href="#">Audio Description</a>
+        <a href="#">Help Center</a>
+        <a href="#">Gift Cards</a>
+        <a href="#">Media Center</a>
+        <a href="#">Investor Relations</a>
+        <a href="#">Jobs</a>
+        <a href="#">Terms of Use</a>
+        <a href="#">Privacy</a>
+        <a href="#">Legal Notices</a>
+        <a href="#">Cookie Preferences</a>
+        <a href="#">Corporate Information</a>
+        <a href="#">Contact Us</a>
+      </div>
+      <button class="footer-service-code">Service Code</button>
+      <p class="footer-copy">&copy; 2026 Netflix Clone. This is a demo project.</p>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
